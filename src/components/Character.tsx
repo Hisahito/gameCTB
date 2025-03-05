@@ -1,7 +1,6 @@
-// src/components/character.tsx
+// src/components/Characters.tsx
 import { useEffect, useState } from 'react';
-import { publicClient } from '../config/client';
-import { parseAbi, parseAbiItem, decodeEventLog } from 'viem';
+import io from 'socket.io-client';
 
 interface CharacterCreatedEvent {
   characterId: string;
@@ -10,74 +9,46 @@ interface CharacterCreatedEvent {
   isNew?: boolean;
 }
 
-const eventItem = parseAbi(['event CharacterCreated(uint256 characterId, uint256 affinity, uint256 velocity)']);
-const eventItem2 = parseAbiItem('event CharacterCreated(uint256 characterId, uint256 affinity, uint256 velocity)');
+// Configura la URL del backend, puedes usar una variable de entorno si lo prefieres
+const BACKEND_URL = 'http://localhost:3000';
+const socket = io(BACKEND_URL);
 
 const HistoricalCharacterEvents = () => {
   const [events, setEvents] = useState<CharacterCreatedEvent[]>([]);
 
   useEffect(() => {
+    // Obtén el listado histórico de personajes vía REST del backend
     async function fetchEvents() {
       try {
-        const logs = await publicClient.getLogs({
-          address: '0x322AE0BEE905572DE3d1F67E2A560c19fbc76994',
-          events: eventItem,
-          fromBlock: 48628746n,
-          toBlock: 'latest',
-        });
-        console.log(logs);
-        console.log(eventItem);
-        const eventsData: CharacterCreatedEvent[] = logs.map((log) => {
-          const decoded = decodeEventLog({
-            abi: eventItem,
-            data: log.data,
-            topics: log.topics,
-          });
-          return {
-            characterId: decoded.args.characterId.toString(),
-            affinity: decoded.args.affinity.toString(),
-            velocity: decoded.args.velocity.toString(),
-          };
-        });
-        setEvents(eventsData);
+        const response = await fetch(`${BACKEND_URL}/characters`);
+        const data = await response.json();
+        // Se espera que el backend retorne { characters: [...] }
+        setEvents(data.characters);
       } catch (error) {
         console.error('Error al obtener los eventos históricos:', error);
       }
     }
     fetchEvents();
-  }, [eventItem]);
 
-  useEffect(() => {
-    const unwatch = publicClient.watchEvent({
-      address: '0x322AE0BEE905572DE3d1F67E2A560c19fbc76994',
-      event: eventItem2,
-      onLogs: (logs) => {
-        logs.forEach((log) => {
-          const decoded = decodeEventLog({
-            abi: eventItem,
-            data: log.data,
-            topics: log.topics,
-          });
-          const newEvent: CharacterCreatedEvent = {
-            characterId: decoded.args.characterId.toString(),
-            affinity: decoded.args.affinity.toString(),
-            velocity: decoded.args.velocity.toString(),
-            isNew: true,
-          };
-          setEvents((prev) => [...prev, newEvent]);
-        });
-      },
+    // Escucha el evento 'characters' para recibir el listado inicial (opcional)
+    socket.on('characters', (data: CharacterCreatedEvent[]) => {
+      setEvents(data);
+    });
+
+    // Escucha el evento 'newCharacter' para actualizar la UI en tiempo real
+    socket.on('newCharacter', (newCharacter: CharacterCreatedEvent) => {
+      setEvents(prev => [...prev, newCharacter]);
     });
 
     return () => {
-      unwatch();
+      socket.off('characters');
+      socket.off('newCharacter');
     };
-  }, [eventItem2]);
+  }, []);
 
   return (
     <div>
       <h2>Histórico de CharacterCreated</h2>
-      {/* Contenedor para disponer los eventos en fila con scroll horizontal */}
       <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto' }}>
         {events.map((event, index) => (
           <div

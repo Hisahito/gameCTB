@@ -24,7 +24,7 @@ const App: React.FC = () => {
       >
         {/* Contenedor de la izquierda (columna) */}
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <h1>Bienvenido a Conquest The Block</h1>
+          <h1>Conquest The Block</h1>
           <p>Juego web desarrollado con React/TypeScript/Phaser</p>
           {/* Ahora el ConnectButton se muestra debajo del <p> */}
           <ConnectButton />
