@@ -6,6 +6,7 @@ import { randomFromSeed, getDeterministicTexture } from '../utils/textureUtils';
 import { createTooltip } from '../utils/uiHelpers';
 import images from '../assets';
 import BlockForm from '../components/BlockForm'; // Importamos el formulario
+import GameStateManager from '../managers/GameStateManager';
 
 interface Block {
   blockId: number;
@@ -91,6 +92,7 @@ const MapCanvas2: React.FC = () => {
         this.load.image('woods', images.blockWoods);
         this.load.image('woods1', images.woods1);
         this.load.image('woods2', images.woods2);
+        this.load.image('woods3', images.woods3);
         this.load.image('gchest', images.cofre);
 
         // Cargar el JSON del mapa y de personajes
@@ -161,9 +163,9 @@ const MapCanvas2: React.FC = () => {
         ];
 
         const woodsTextures = [
-          { key: 'woods2', probability: 0.7 },
+          { key: 'woods3', probability: 0.5 },
+          { key: 'woods2', probability: 0.3 },
           { key: 'woods1', probability: 0.2 },
-          { key: 'woods1', probability: 0.1 },
         ];
 
         const container = this.add.container();

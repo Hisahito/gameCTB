@@ -19,6 +19,7 @@ import grass2Img from './Grass2.png';
 import grass3Img from './Grass3.png';
 import woods1Img from './Woods1.png';
 import woods2Img from './Woods2.png';
+import woods3Img from './Woods3.png';
 
 interface Images {
   [key: string]: string;
@@ -40,6 +41,7 @@ const images: Images = {
   grass3: grass3Img,
   woods1: woods1Img,
   woods2: woods2Img,
+  woods3: woods3Img,
 };
 
 export default images;
