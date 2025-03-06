@@ -17,6 +17,9 @@ import chestImg from '../assets/GrassChest.png';
 import grass2Img from '../assets/Grass2.png';
 import grass3Img from '../assets/Grass3.png';
 
+import woods1Img from '../assets/Woods1.png';
+import woods2Img from '../assets/Woods2.png';
+
 interface Block {
   blockId: number;
   x: number;
@@ -102,6 +105,8 @@ const MapCanvas2: React.FC = () => {
         this.load.image('bosque', woodsImg);
         this.load.image('piedra', rockImg);
         this.load.image('woods', woodsImg);
+        this.load.image('woods1', woods1Img);
+        this.load.image('woods2', woods2Img);
         this.load.image('gchest', chestImg);
 
         // Cargar el JSON del mapa y de personajes
@@ -166,14 +171,27 @@ const MapCanvas2: React.FC = () => {
 
         // Definición de texturas default y sus probabilidades
   const defaultTextures = [
-    { key: 'pasto', probability: 0.7 },
-    { key: 'grass2', probability: 0.2 },
-    { key: 'grass3', probability: 0.1 },
+    { key: 'pasto', probability: 0.85 },
+    { key: 'grass2', probability: 0.1 },
+    { key: 'grass3', probability: 0.05 },
   ];
 
-  function getRandomTexture(textures) {
+  const woodsTextures = [
+    { key: 'woods1', probability: 0.7 },
+    { key: 'woods1', probability: 0.2 },
+    { key: 'woods2', probability: 0.1 },
+  ];
+
+  // Función determinista que genera un número aleatorio entre 0 y 1 a partir de una semilla
+  function randomFromSeed(seed) {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  }
+
+  // Función para escoger una textura de forma determinista según las probabilidades y una semilla
+  function getDeterministicTexture(textures, seed) {
     const totalProbability = textures.reduce((acc, curr) => acc + curr.probability, 0);
-    const random = Math.random() * totalProbability;
+    const random = randomFromSeed(seed) * totalProbability;
     let sum = 0;
     for (let texture of textures) {
       sum += texture.probability;
@@ -199,15 +217,16 @@ const MapCanvas2: React.FC = () => {
           if (category === 'Special Cluster 3') texture = 'gchest';
           if (category === 'Special Cluster 4') texture = 'pasto';
           if (category === 'Special Cluster 5') texture = 'castillo';
-          if (only === 1) texture = 'woods';
+          if (only === 1) texture = getDeterministicTexture(woodsTextures, block.blockId);
           if (only === 3) texture = 'agua';
           if (only === 6) texture = 'agua';
           if (only === 8) texture = 'castillo';
 
 
-          // Si ninguna condición especial se cumple, asignar una textura default aleatoria
+    // Si ninguna condición especial se cumple, asignar la textura default de forma determinista
     if (!texture) {
-      texture = getRandomTexture(defaultTextures);
+      // Usamos blockId como semilla para mantener la misma asignación en cada recarga
+      texture = getDeterministicTexture(defaultTextures, block.blockId);
     }
 
 
