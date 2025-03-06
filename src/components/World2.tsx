@@ -3,22 +3,8 @@ import Phaser from 'phaser';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import abi from '../abi/TimeMachine.json';
 
-import castilloImg from '../assets/castillo.png';
-import cofreImg from '../assets/cofre.png';
-import grassImg from '../assets/pasto3.png';
-import aguaImg from '../assets/water.png';
-import bosqueImg from '../assets/bosque.png';
-import piedraImg from '../assets/piedra1.png';
-import woodsImg from '../assets/blockWoods.png';
-import soldierIdle from '../assets/Soldier-Idle.png'; // Sprite del personaje
-import rockImg from '../assets/BlockRock1.png';
-import nightImg from '../assets/NightBlock1.png';
-import chestImg from '../assets/GrassChest.png';
-import grass2Img from '../assets/Grass2.png';
-import grass3Img from '../assets/Grass3.png';
+import images from '../assets';
 
-import woods1Img from '../assets/Woods1.png';
-import woods2Img from '../assets/Woods2.png';
 
 interface Block {
   blockId: number;
@@ -94,27 +80,27 @@ const MapCanvas2: React.FC = () => {
       private highlight!: Phaser.GameObjects.Graphics;
 
       preload() {
-        this.load.image('castillo', castilloImg);
-        this.load.image('cofre', bosqueImg);
-        this.load.image('torre', grassImg);
-        this.load.image('pasto', grassImg);
-        this.load.image('grass2', grass2Img);
-        this.load.image('grass3', grass3Img);
-        this.load.image('ngrass', nightImg);
-        this.load.image('agua', aguaImg);
-        this.load.image('bosque', woodsImg);
-        this.load.image('piedra', rockImg);
-        this.load.image('woods', woodsImg);
-        this.load.image('woods1', woods1Img);
-        this.load.image('woods2', woods2Img);
-        this.load.image('gchest', chestImg);
+        this.load.image('castillo', images.castillo);
+        this.load.image('cofre', images.cofre);
+        this.load.image('torre', images.pasto);
+        this.load.image('pasto', images.pasto);
+        this.load.image('grass2', images.grass2);
+        this.load.image('grass3', images.grass3);
+        this.load.image('ngrass', images.nightBlock);
+        this.load.image('agua', images.agua);
+        this.load.image('bosque', images.bosque);
+        this.load.image('piedra', images.piedra);
+        this.load.image('woods', images.blockWoods);
+        this.load.image('woods1', images.woods1);
+        this.load.image('woods2', images.woods2);
+        this.load.image('gchest', images.cofre);
 
         // Cargar el JSON del mapa y de personajes
         this.load.json('world', 'Canonical.json');
         this.load.json('characters', 'Characters.json');
 
         // Cargar el sprite sheet del personaje (6 frames de 100x100)
-        this.load.spritesheet('soldierIdle', soldierIdle, { frameWidth: 100, frameHeight: 100 });
+        this.load.spritesheet('soldierIdle', images.soldierIdle, { frameWidth: 100, frameHeight: 100 });
       }
 
       create() {
