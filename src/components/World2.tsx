@@ -1,3 +1,4 @@
+// src/components/MapCanvas2.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
@@ -5,8 +6,8 @@ import abi from '../abi/TimeMachine.json';
 import { randomFromSeed, getDeterministicTexture } from '../utils/textureUtils';
 import { createTooltip } from '../utils/uiHelpers';
 import images from '../assets';
-import BlockForm from '../components/BlockForm'; // Importamos el formulario
-import GameStateManager from '../managers/GameStateManager';
+import BlockForm from '../components/BlockForm';
+import GameStateManager, { BlockConquestStartedEvent } from '../managers/GameStateManager';
 
 interface Block {
   blockId: number;
@@ -18,13 +19,9 @@ interface Block {
   only: number;
 }
 
-interface Character {
-  characterId: number;
-  blockId: number;
-}
-
 const tileWidth = 64;
 const tileHeight = 32;
+const BACKEND_URL = 'http://localhost:3000';
 
 const MapCanvas2: React.FC = () => {
   const gameContainerRef = useRef<HTMLDivElement>(null);
@@ -40,7 +37,6 @@ const MapCanvas2: React.FC = () => {
   const { data: hash, writeContract } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
-  // Función submit que se dispara al enviar el formulario
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!selectedBlockId) return;
@@ -53,7 +49,6 @@ const MapCanvas2: React.FC = () => {
     setShowForm(false);
   }
 
-  // Escucha el CustomEvent que dispara Phaser al seleccionar un bloque
   useEffect(() => {
     const handleBlockSelected = (e: CustomEvent<{ blockId: number }>) => {
       setSelectedBlockId(e.detail.blockId);
@@ -70,8 +65,7 @@ const MapCanvas2: React.FC = () => {
 
     class IsoScene extends Phaser.Scene {
       private blockData: Block[] = [];
-      private charactersData: Character[] = [];
-      // Mapa para asociar cada blockId con su sprite de personaje
+      // Mapa para asociar cada characterId con su sprite de personaje
       private charactersMap: Map<number, Phaser.GameObjects.Sprite> = new Map();
       private camera!: Phaser.Cameras.Scene2D.Camera;
       private selectedBlock: Phaser.GameObjects.Sprite | null = null;
@@ -79,6 +73,7 @@ const MapCanvas2: React.FC = () => {
       private highlight!: Phaser.GameObjects.Graphics;
 
       preload() {
+        // Cargar imágenes y assets
         this.load.image('castillo', images.castillo);
         this.load.image('cofre', images.cofre);
         this.load.image('torre', images.pasto);
@@ -95,27 +90,24 @@ const MapCanvas2: React.FC = () => {
         this.load.image('woods3', images.woods3);
         this.load.image('gchest', images.cofre);
 
-        // Cargar el JSON del mapa y de personajes
+        // Cargar el JSON del mapa (world) – se mantiene estático
         this.load.json('world', 'Canonical.json');
-        this.load.json('characters', 'Characters.json');
 
         // Cargar el sprite sheet del personaje (6 frames de 100x100)
         this.load.spritesheet('soldierIdle', images.soldierIdle, { frameWidth: 100, frameHeight: 100 });
       }
 
       create() {
-        // Deshabilitar menú contextual
+        // Deshabilitar el menú contextual
         this.input.mouse?.disableContextMenu();
 
         this.blockData = this.cache.json.get('world');
-        this.charactersData = this.cache.json.get('characters');
 
         this.camera = this.cameras.main;
         this.camera.setZoom(1);
         this.camera.setBounds(-3000, -3000, 6000, 6000);
         this.camera.centerOn(0, 0);
 
-        // Crear animación idle para el personaje
         this.anims.create({
           key: 'idle',
           frames: this.anims.generateFrameNumbers('soldierIdle', { start: 0, end: 5 }),
@@ -123,7 +115,6 @@ const MapCanvas2: React.FC = () => {
           repeat: -1,
         });
 
-        // Movimiento con el mouse (drag)
         this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
           if (pointer.isDown) {
             this.camera.scrollX -= pointer.velocity.x / 5;
@@ -131,7 +122,6 @@ const MapCanvas2: React.FC = () => {
           }
         });
 
-        // Evento de zoom con la rueda del mouse
         const wheelHandler = (event: WheelEvent) => {
           if (event.deltaY > 0) {
             this.camera.zoom = Math.max(0.5, this.camera.zoom - 0.1);
@@ -144,15 +134,19 @@ const MapCanvas2: React.FC = () => {
           window.removeEventListener('wheel', wheelHandler);
         });
 
-        // Crear contorno en forma de rombo
         this.highlight = this.add.graphics();
         this.highlight.lineStyle(3, 0xffff00);
         this.highlight.visible = false;
         this.add.existing(this.highlight);
 
-        // Renderizar bloques y personajes
         this.renderBlocks();
-        this.renderCharacters();
+        // Ya no se carga Characters.json, se usará el histórico desde el backend
+        this.fetchHistoricalPositions();
+
+        // Suscribirse a los eventos en tiempo real a través del GameStateManager
+        GameStateManager.on('blockConquestStarted', (newEvent: BlockConquestStartedEvent) => {
+          this.handleBlockConquestStarted(newEvent);
+        });
       }
 
       renderBlocks() {
@@ -244,7 +238,6 @@ const MapCanvas2: React.FC = () => {
             this.selectedBlock = sprite;
 
             if (pointer.rightButtonDown()) {
-              // Notificar a React que se ha seleccionado el bloque
               window.dispatchEvent(new CustomEvent('blockSelected', { detail: { blockId } }));
             }
 
@@ -263,25 +256,81 @@ const MapCanvas2: React.FC = () => {
         });
       }
 
-      renderCharacters() {
-        const spacingFactorX = 0.3;
-        const spacingFactorY = 0.3;
+      async fetchHistoricalPositions() {
+        try {
+          const response = await fetch(`${BACKEND_URL}/positions`);
+          const data = await response.json();
+          // Se espera que el endpoint retorne un objeto { positions: { [characterId]: event } }
+          const positions = data.positions;
+          for (const key in positions) {
+            const event = positions[key];
+            const characterId = Number(event.args.characterId);
+            const newBlockId = Number(event.args.blockId);
+            // Buscar el bloque correspondiente en blockData
+            const block = this.blockData.find((b) => b.blockId === newBlockId);
+            if (block) {
+              const isoX = (block.x - block.y) * (tileWidth * 0.3);
+              const isoY = (block.x + block.y) * (tileHeight * 0.3);
+              let sprite = this.charactersMap.get(characterId);
+              if (!sprite) {
+                // Crear el sprite si no existe aún
+                sprite = this.add.sprite(isoX, isoY + 20, 'soldierIdle').setOrigin(0.5, 1);
+                sprite.play('idle');
+                sprite.setDepth(isoY + 20);
+                this.charactersMap.set(characterId, sprite);
+              } else {
+                // Actualizar posición sin animación para el histórico
+                sprite.x = isoX;
+                sprite.y = isoY + 20;
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error al obtener posiciones históricas:', error);
+        }
+      }
 
-        this.charactersData.forEach((character: Character) => {
-          const block = this.blockData.find((b) => b.blockId === character.blockId);
-          if (!block) return;
+      handleBlockConquestStarted(newEvent: BlockConquestStartedEvent) {
+        console.log("Evento blockConquestStarted recibido:", newEvent);
+        if (!this.blockData) {
+          console.warn("blockData no está definido en este momento.");
+          return;
+        }
+        const characterId = Number(newEvent.args.characterId);
+        const newBlockId = Number(newEvent.args.blockId);
+        const block = this.blockData.find((b) => b.blockId === newBlockId);
+        if (block) {
+          const isoX = (block.x - block.y) * (tileWidth * 0.3);
+          const isoY = (block.x + block.y) * (tileHeight * 0.3);
+          let sprite = this.charactersMap.get(characterId);
+          if (sprite) {
+            console.log(`Actualizando sprite del personaje ${characterId} a posición: (${isoX}, ${isoY + 20})`);
+            this.tweens.add({
+              targets: sprite,
+              x: isoX,
+              y: isoY + 20,
+              duration: 500,
+              ease: 'Power1',
+              onComplete: () => {
+                console.log(`Sprite del personaje ${characterId} actualizado.`);
+              }
+            });
+          } else {
+            console.log(`No se encontró sprite para el personaje ${characterId}, se crea uno nuevo.`);
+            sprite = this.add.sprite(isoX, isoY + 20, 'soldierIdle').setOrigin(0.5, 1);
+            sprite.play('idle');
+            sprite.setDepth(isoY + 20);
+            this.charactersMap.set(characterId, sprite);
+          }
+        } else {
+          console.warn(`No se encontró bloque con blockId ${newBlockId}`);
+        }
+      }
+      
+      
 
-          const isoX = (block.x - block.y) * (tileWidth * spacingFactorX);
-          const isoY = (block.x + block.y) * (tileHeight * spacingFactorY);
-          const posX = isoX;
-          const posY = isoY + 20;
-
-          const soldier = this.add.sprite(posX, posY, 'soldierIdle').setOrigin(0.5, 1);
-          soldier.play('idle');
-          soldier.setDepth(posY);
-
-          this.charactersMap.set(block.blockId, soldier);
-        });
+      shutdown() {
+        GameStateManager.off('blockConquestStarted', this.handleBlockConquestStarted, this);
       }
     }
 
@@ -326,43 +375,11 @@ const MapCanvas2: React.FC = () => {
           onClose={() => setShowForm(false)}
         />
       )}
-      {isConfirming && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '10%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: '#000',
-            color: '#fff',
-            padding: '10px',
-            borderRadius: '5px',
-            zIndex: 10,
-          }}
-        >
-          Esperando transacción...
-        </div>
-      )}
-      {isConfirmed && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '10%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'green',
-            color: '#fff',
-            padding: '10px',
-            borderRadius: '5px',
-            zIndex: 10,
-          }}
-        >
-          Transacción confirmada!
-        </div>
-      )}
     </div>
   );
 };
 
 export default MapCanvas2;
+
+
 

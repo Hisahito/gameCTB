@@ -1,17 +1,25 @@
 // src/managers/GameStateManager.ts
 import EventEmitter from 'events';
 
-
-
-interface CharacterUpdate {
-  characterId: number;
-  position: { x: number; y: number };
+export interface BlockConquestStartedEvent {
+  eventName: string;
+  blockNumber: string; // número del bloque en el que ocurrió el evento
+  transactionHash: string;
+  args: {
+    blockId: string;         // la posición (blockId) del personaje
+    characterId: string;     // id del personaje
+    conquestEndBlock: string;
+    blocksRemaining: string;
+  };
 }
 
 class GameStateManager extends EventEmitter {
-  updateCharacterState(update: CharacterUpdate) {
-    this.emit('characterStateChanged', update);
+  updateBlockConquestStarted(event: BlockConquestStartedEvent) {
+    // Emite el evento 'blockConquestStarted' para que los listeners (p.ej., Positions.tsx) puedan actualizar el estado
+    this.emit('blockConquestStarted', event);
   }
 }
 
 export default new GameStateManager();
+
+

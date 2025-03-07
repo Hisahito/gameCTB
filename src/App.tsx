@@ -9,6 +9,7 @@ import CharacterAlchemyEventListener from './components/AlchemySocket';
 import TransferEventsListener from './components/AlchemySocket';
 import MapCanvas2 from './components/World2';
 import TimeEvents from './components/TimeEvents';
+import Positions from './components/positions';
 
 const App: React.FC = () => {
   return (
@@ -37,6 +38,7 @@ const App: React.FC = () => {
           maxWidth: '50%' 
         }}>
           <HistoricalCharacterEvents />
+          <Positions/>
         </div>
       </header>
       <CreateCharacter/>

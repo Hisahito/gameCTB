@@ -1,25 +1,34 @@
 // src/services/WebSocketService.ts
+import { io, Socket } from 'socket.io-client';
 import GameStateManager from '../managers/GameStateManager';
+import { BlockConquestStartedEvent } from '../managers/GameStateManager';
 
 class WebSocketService {
-  private socket: WebSocket;
+  private socket: Socket;
 
   constructor(url: string) {
-    this.socket = new WebSocket(url);
-    this.socket.onmessage = this.handleMessage.bind(this);
+    // Conexión usando socket.io-client
+    this.socket = io(url, { transports: ['websocket'] });
+    this.registerListeners();
   }
 
-  private handleMessage(event: MessageEvent) {
-    // Supongamos que el mensaje trae un JSON con la siguiente estructura:
-    // { blocks: [{ blockId, state }], characters: [{ characterId, status, position }] }
-    const data = JSON.parse(event.data);
+  private registerListeners(): void {
+    // Escucha el evento 'newEvent' emitido por el backend
+    this.socket.on('newEvent', (data: any) => {
+      // Solo manejamos los eventos BlockConquestStarted en este ejemplo
+      if (data.eventName === 'BlockConquestStarted') {
+        GameStateManager.updateBlockConquestStarted(data as BlockConquestStartedEvent);
+      }
+      // Si recibes otros tipos, aquí podrías agregar más casos.
+    });
+  }
 
-    if (data.characters) {
-      data.characters.forEach((charUpdate: any) => {
-        GameStateManager.updateCharacterState(charUpdate);
-      });
-    }
+  // Método opcional para enviar mensajes al backend si es necesario
+  public sendMessage(event: string, payload: any): void {
+    this.socket.emit(event, payload);
   }
 }
 
 export default WebSocketService;
+
+
