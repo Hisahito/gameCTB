@@ -3,46 +3,51 @@ import { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 
 interface CharacterCreatedEvent {
-  characterId: string;
-  affinity: string;
-  velocity: string;
+  eventName: string;
+  args: {
+    characterId: string;
+    affinity: string;
+    velocity: string;
+  };
   isNew?: boolean;
 }
 
-// Configura la URL del backend, puedes usar una variable de entorno si lo prefieres
+// URL del backend; se puede parametrizar mediante variables de entorno
 const BACKEND_URL = 'http://localhost:3000';
 const socket = io(BACKEND_URL);
 
-const HistoricalCharacterEvents = () => {
-  const [events, setEvents] = useState<CharacterCreatedEvent[]>([]);
+const Characters = () => {
+  const [characters, setCharacters] = useState<CharacterCreatedEvent[]>([]);
 
   useEffect(() => {
-    // Obtén el listado histórico de personajes vía REST del backend
-    async function fetchEvents() {
+    // Obtiene el histórico de personajes vía REST desde /characters
+    async function fetchCharacters() {
       try {
         const response = await fetch(`${BACKEND_URL}/characters`);
         const data = await response.json();
         // Se espera que el backend retorne { characters: [...] }
-        setEvents(data.characters);
+        setCharacters(data.characters);
       } catch (error) {
-        console.error('Error al obtener los eventos históricos:', error);
+        console.error('Error al obtener personajes:', error);
       }
     }
-    fetchEvents();
+    fetchCharacters();
 
-    // Escucha el evento 'characters' para recibir el listado inicial (opcional)
+    // Opcional: Escucha el evento 'characters' para recibir el listado completo (si se emite)
     socket.on('characters', (data: CharacterCreatedEvent[]) => {
-      setEvents(data);
+      setCharacters(data);
     });
 
-    // Escucha el evento 'newCharacter' para actualizar la UI en tiempo real
-    socket.on('newCharacter', (newCharacter: CharacterCreatedEvent) => {
-      setEvents(prev => [...prev, newCharacter]);
+    // Escucha el evento 'newEvent' y filtra los de tipo "CharacterCreated"
+    socket.on('newEvent', (newEvent: CharacterCreatedEvent) => {
+      if (newEvent.eventName === 'CharacterCreated') {
+        setCharacters((prev) => [...prev, newEvent]);
+      }
     });
 
     return () => {
       socket.off('characters');
-      socket.off('newCharacter');
+      socket.off('newEvent');
     };
   }, []);
 
@@ -50,11 +55,11 @@ const HistoricalCharacterEvents = () => {
     <div>
       <h2>Histórico de CharacterCreated</h2>
       <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto' }}>
-        {events.map((event, index) => (
+        {characters.map((character, index) => (
           <div
             key={index}
             style={{
-              border: event.isNew ? '2px solid red' : '1px solid #ccc',
+              border: character.isNew ? '2px solid red' : '1px solid #ccc',
               margin: '1rem 0',
               padding: '1rem',
               borderRadius: '8px',
@@ -62,13 +67,13 @@ const HistoricalCharacterEvents = () => {
             }}
           >
             <p>
-              <strong>ID del Personaje:</strong> {event.characterId}
+              <strong>ID del Personaje:</strong> {character.args.characterId}
             </p>
             <p>
-              <strong>Affinity:</strong> {event.affinity}
+              <strong>Affinity:</strong> {character.args.affinity}
             </p>
             <p>
-              <strong>Velocity:</strong> {event.velocity}
+              <strong>Velocity:</strong> {character.args.velocity}
             </p>
           </div>
         ))}
@@ -77,4 +82,5 @@ const HistoricalCharacterEvents = () => {
   );
 };
 
-export default HistoricalCharacterEvents;
+export default Characters;
+

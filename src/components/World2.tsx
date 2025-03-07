@@ -164,8 +164,8 @@ const MapCanvas2: React.FC = () => {
 
         const woodsTextures = [
           { key: 'woods3', probability: 0.5 },
-          { key: 'woods2', probability: 0.3 },
-          { key: 'woods1', probability: 0.2 },
+          { key: 'woods2', probability: 0.4 },
+          { key: 'woods1', probability: 0.1 },
         ];
 
         const container = this.add.container();
