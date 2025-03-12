@@ -19,16 +19,23 @@ const tileWidth = 64;
 const tileHeight = 32;
 const BACKEND_URL = 'http://localhost:3000';
 
+
 export default class IsoScene extends Phaser.Scene {
   private blockData: Block[] = [];
-  private charactersMap: Map<number, Phaser.GameObjects.Sprite> = new Map();
   private camera!: Phaser.Cameras.Scene2D.Camera;
   private selectedBlock: Phaser.GameObjects.Sprite | null = null;
   private tooltip: Phaser.GameObjects.Container | null = null;
   private highlight!: Phaser.GameObjects.Graphics;
-  // Nueva propiedad para almacenar los sprites de los bloques y poder acceder a ellos luego
+  // Container para los sprites de los bloques (world)
   private blockContainer!: Phaser.GameObjects.Container;
+  // Map anidado para los sprites de los personajes:
+  // key: characterId, value: Map donde key es blockId y value es el sprite
+  private charactersMap: Map<number, Map<number, Phaser.GameObjects.Sprite>> = new Map();
+  // Número actual de bloque (actualizado vía evento)
+  private currentBlockNumber: number = 0;
 
+  
+  
   preload() {
     // Cargar imágenes y assets
     this.load.image('castillo', images.castillo);
@@ -75,6 +82,21 @@ export default class IsoScene extends Phaser.Scene {
       repeat: -1,
     });
 
+    // En create() o donde se establezca el listener de blockNumber
+GameStateManager.on('blockNumber', (bn: string) => {
+    this.currentBlockNumber = parseInt(bn);
+    // Recalcular el tinte de cada bloque según el BlockState almacenado
+    this.blockContainer.list.forEach((child) => {
+      if (child instanceof Phaser.GameObjects.Sprite) {
+        const blockState = child.getData('blockState') as BlockState | undefined;
+        if (blockState) {
+          this.applyStatusTint(child, blockState);
+        }
+      }
+    });
+  });
+  
+
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (pointer.isDown) {
         this.camera.scrollX -= pointer.velocity.x / 5;
@@ -99,27 +121,25 @@ export default class IsoScene extends Phaser.Scene {
     this.highlight.visible = false;
     this.add.existing(this.highlight);
 
-    // Se crea un container para almacenar los sprites de los bloques
+    // Container para almacenar los sprites de los bloques
     this.blockContainer = this.add.container();
     this.renderBlocks();
     this.fetchHistoricalPositions();
-    this.fetchBlockStatus(); // Nueva función para obtener el estado de los bloques
+    this.fetchBlockStatus();
 
-    // Suscribirse a eventos en tiempo real
-    GameStateManager.on('blockConquestStarted', (newEvent: BlockConquestStartedEvent) => {
-      this.handleBlockConquestStarted(newEvent);
-    });
-
-    // Suscribirse a eventos en tiempo real para actualización de bloque
+    // Suscribirse a eventos en tiempo real para actualización de bloques
     GameStateManager.on('blockUpdated', (newEvent: BlockState) => {
       this.handleBlockUpdated(newEvent);
+    });
+    GameStateManager.on('blockConquestStarted', (newEvent: BlockState) => {
+      this.handleBlockConquestStarted(newEvent);
     });
   }
 
   renderBlocks() {
     const defaultTextures = [
-      { key: 'pasto', probability: 0.85 },
-      { key: 'grass2', probability: 0.05 },
+      { key: 'pasto', probability: 0.75 },
+      { key: 'grass2', probability: 0.15 },
       { key: 'grass3', probability: 0.04 },
       { key: 'grass4', probability: 0.05 },
       { key: 'grass5', probability: 0.01 },
@@ -139,17 +159,16 @@ export default class IsoScene extends Phaser.Scene {
       const isoX = (x - y) * (tileWidth * spacingFactorX);
       const isoY = (x + y) * (tileHeight * spacingFactorY);
 
-      let texture = null;
+      let texture: string | null = null;
       if (category === 'Special Cluster 1') texture = 'agua';
       if (category === 'Special Cluster 2') texture = 'tower1';
       if (category === 'Special Cluster 3') texture = 'gchest';
-      if (category === 'Special Cluster 4') texture = 'pasto';
+      if (category === 'Special Cluster 4') texture = 'grass2';
       if (category === 'Special Cluster 5') texture = 'castillo';
       if (only === 1) texture = getDeterministicTexture(woodsTextures, block.blockId);
       if (only === 3) texture = 'agua';
       if (only === 6) texture = 'agua';
       if (only === 8) texture = 'castillo';
-
       if (!texture) {
         texture = getDeterministicTexture(defaultTextures, block.blockId);
       }
@@ -176,15 +195,7 @@ export default class IsoScene extends Phaser.Scene {
             ease: 'Power1',
           });
           const prevBlockId = this.selectedBlock.getData('blockId');
-          const prevSoldier = this.charactersMap.get(prevBlockId);
-          if (prevSoldier) {
-            this.tweens.add({
-              targets: prevSoldier,
-              y: prevSoldier.y + 10,
-              duration: 200,
-              ease: 'Power1',
-            });
-          }
+          // Para simplificar, aquí se podría actualizar el sprite del soldado del bloque anterior
         }
 
         this.tweens.add({
@@ -194,80 +205,86 @@ export default class IsoScene extends Phaser.Scene {
           ease: 'Power1',
         });
         const blockId = sprite.getData('blockId');
-        const soldier = this.charactersMap.get(blockId);
-        if (soldier) {
-          this.tweens.add({
-            targets: soldier,
-            y: soldier.y - 10,
-            duration: 200,
-            ease: 'Power1',
-          });
-        }
-        this.selectedBlock = sprite;
-
         if (pointer.rightButtonDown()) {
           window.dispatchEvent(new CustomEvent('blockSelected', { detail: { blockId } }));
         }
 
         if (this.tooltip) this.tooltip.destroy();
         this.tooltip = createTooltip(this, sprite, block);
+        this.selectedBlock = sprite;
       });
 
       sprite.on('pointerover', () => {
+        // Se aplicará el tinte según el status, así que aquí podríamos poner un tinte temporal
         sprite.setTint(0xBF3131);
       });
       sprite.on('pointerout', () => {
-    const staticTint = sprite.getData('staticTint') || 0xffffff;
-  sprite.setTint(staticTint);
+        const staticTint = sprite.getData('staticTint') || 0xffffff;
+        sprite.setTint(staticTint);
       });
 
-      // Agregar el sprite al container de bloques
       this.blockContainer.add(sprite);
     });
   }
 
   async fetchHistoricalPositions() {
     try {
-      const response = await fetch(`${BACKEND_URL}/positions`);
+      const response = await fetch(`${BACKEND_URL}/blocks`);
       const data = await response.json();
-      const positions = data.positions;
-      for (const key in positions) {
-        const event = positions[key];
-        const characterId = Number(event.args.characterId);
-        const newBlockId = Number(event.args.blockId);
-        const block = this.blockData.find((b) => b.blockId === newBlockId);
+      const blocks: BlockState[] = data.blocks;
+      const validStatuses = ['defendido', 'redominio', 'vasallo'];
+
+      blocks.forEach((blockState) => {
+        if (!validStatuses.includes(blockState.status)) return;
+
+        let controllingCharacter: number | null = null;
+        if (blockState.status === 'defendido') {
+          controllingCharacter = blockState.owner ? Number(blockState.owner) : null;
+        } else if (blockState.status === 'redominio') {
+          controllingCharacter = blockState.lastOwner ? Number(blockState.lastOwner) : null;
+        } else if (blockState.status === 'vasallo') {
+          controllingCharacter = blockState.ally ? Number(blockState.ally) : null;
+        }
+
+        if (!controllingCharacter) return;
+
+        const blockIdNum = Number(blockState.blockId);
+        const block = this.blockData.find((b) => b.blockId === blockIdNum);
         if (block) {
           const isoX = (block.x - block.y) * (tileWidth * 0.3);
           const isoY = (block.x + block.y) * (tileHeight * 0.3);
-          let sprite = this.charactersMap.get(characterId);
-          if (!sprite) {
-            sprite = this.add.sprite(isoX, isoY + 20, 'soldierIdle').setOrigin(0.5, 1);
-            sprite.play('idle');
-            sprite.setDepth(isoY + 20);
-            this.charactersMap.set(characterId, sprite);
-          } else {
+          let charSprites = this.charactersMap.get(controllingCharacter);
+          if (!charSprites) {
+            charSprites = new Map<number, Phaser.GameObjects.Sprite>();
+            this.charactersMap.set(controllingCharacter, charSprites);
+          }
+          if (charSprites.has(blockIdNum)) {
+            const sprite = charSprites.get(blockIdNum)!;
             sprite.x = isoX;
             sprite.y = isoY + 20;
+          } else {
+            const sprite = this.add.sprite(isoX, isoY + 20, 'soldierIdle').setOrigin(0.5, 1);
+            sprite.play('idle');
+            sprite.setDepth(isoY + 20);
+            charSprites.set(blockIdNum, sprite);
           }
         }
-      }
+      });
     } catch (error) {
-      console.error('Error al obtener posiciones históricas:', error);
+      console.error('Error al obtener bloques históricos:', error);
     }
   }
 
-  // Nueva función para obtener el estado de los bloques y pintarlos según su status
   async fetchBlockStatus() {
     try {
       const response = await fetch(`${BACKEND_URL}/blocks`);
       const data = await response.json();
-      // Se asume que la respuesta tiene la propiedad "blocks" que es un array de BlockState
       const blocks: BlockState[] = data.blocks;
       blocks.forEach((blockState) => {
         const blockId = parseInt(blockState.blockId);
         const blockSprite = this.getBlockSpriteById(blockId);
         if (blockSprite) {
-          this.applyStatusTint(blockSprite, blockState.status);
+          this.applyStatusTint(blockSprite, blockState);
         } else {
           console.warn(`No se encontró sprite para el bloque ${blockId}`);
         }
@@ -277,10 +294,14 @@ export default class IsoScene extends Phaser.Scene {
     }
   }
 
-  // Función auxiliar para aplicar el tinte según el status
-  private applyStatusTint(sprite: Phaser.GameObjects.Sprite, status: string) {
-    let tint = 0xffffff; // Color por defecto
-    switch (status) {
+  private applyStatusTint(sprite: Phaser.GameObjects.Sprite, blockState: BlockState) {
+    // Calcular el estado efectivo: si currentBlockNumber < conquestEnd, es "en progreso"
+    let effectiveStatus = blockState.status;
+    if (blockState.conquestEnd && this.currentBlockNumber > 0 && this.currentBlockNumber < Number(blockState.conquestEnd)) {
+      effectiveStatus = 'en progreso';
+    }
+    let tint = 0xffffff; // por defecto
+    switch (effectiveStatus) {
       case 'dominio':
         tint = 0xffa500; // naranja
         break;
@@ -293,68 +314,99 @@ export default class IsoScene extends Phaser.Scene {
       case 'vasallo':
         tint = 0x00ff00; // verde fuerte
         break;
+      case 'en progreso':
+        tint = 0x800080; // púrpura
+        break;
       default:
         break;
     }
     sprite.setData('staticTint', tint);
     sprite.setTint(tint);
   }
+  
+  
 
   // Función auxiliar para obtener el sprite de un bloque dado su blockId
   private getBlockSpriteById(blockId: number): Phaser.GameObjects.Sprite | undefined {
     return this.blockContainer.list.find(
-      (child) => child instanceof Phaser.GameObjects.Sprite && child.getData('blockId') === blockId
+      (child) =>
+        child instanceof Phaser.GameObjects.Sprite &&
+        child.getData('blockId') === blockId
     ) as Phaser.GameObjects.Sprite;
   }
 
-  handleBlockConquestStarted(newEvent: BlockConquestStartedEvent) {
-    console.log("Evento blockConquestStarted recibido:", newEvent);
-    if (!this.blockData) {
-      console.warn("blockData no está definido en este momento.");
+  handleBlockConquestStarted(newBlockState: BlockState) {
+    const validStatuses = ['defendido', 'redominio', 'vasallo'];
+    if (!validStatuses.includes(newBlockState.status)) {
+      console.warn(`Estado ${newBlockState.status} no es válido para actualizar posición.`);
       return;
     }
-    const characterId = Number(newEvent.args.characterId);
-    const newBlockId = Number(newEvent.args.blockId);
+  
+    let controllingCharacter: number | null = null;
+    if (newBlockState.status === 'defendido') {
+      controllingCharacter = newBlockState.owner ? Number(newBlockState.owner) : null;
+    } else if (newBlockState.status === 'redominio') {
+      controllingCharacter = newBlockState.lastOwner ? Number(newBlockState.lastOwner) : null;
+    } else if (newBlockState.status === 'vasallo') {
+      controllingCharacter = newBlockState.ally ? Number(newBlockState.ally) : null;
+    }
+  
+    if (!controllingCharacter) {
+      console.warn("No se pudo determinar el controlador para el bloque:", newBlockState);
+      return;
+    }
+  
+    const newBlockId = Number(newBlockState.blockId);
     const block = this.blockData.find((b) => b.blockId === newBlockId);
-    if (block) {
-      const isoX = (block.x - block.y) * (tileWidth * 0.3);
-      const isoY = (block.x + block.y) * (tileHeight * 0.3);
-      let sprite = this.charactersMap.get(characterId);
-      if (sprite) {
-        console.log(`Actualizando sprite del personaje ${characterId} a posición: (${isoX}, ${isoY + 20})`);
-        this.tweens.add({
-          targets: sprite,
-          x: isoX,
-          y: isoY + 20,
-          duration: 500,
-          ease: 'Power1',
-          onComplete: () => {
-            console.log(`Sprite del personaje ${characterId} actualizado.`);
-          }
-        });
-      } else {
-        console.log(`No se encontró sprite para el personaje ${characterId}, se crea uno nuevo.`);
-        sprite = this.add.sprite(isoX, isoY + 20, 'soldierIdle').setOrigin(0.5, 1);
-        sprite.play('idle');
-        sprite.setDepth(isoY + 20);
-        this.charactersMap.set(characterId, sprite);
-      }
-    } else {
+    if (!block) {
       console.warn(`No se encontró bloque con blockId ${newBlockId}`);
+      return;
+    }
+  
+    const isoX = (block.x - block.y) * (tileWidth * 0.3);
+    const isoY = (block.x + block.y) * (tileHeight * 0.3);
+  
+    let charSprites = this.charactersMap.get(controllingCharacter);
+    if (!charSprites) {
+      charSprites = new Map<number, Phaser.GameObjects.Sprite>();
+      this.charactersMap.set(controllingCharacter, charSprites);
+    }
+  
+    if (charSprites.has(newBlockId)) {
+      const sprite = charSprites.get(newBlockId)!;
+      console.log(`Actualizando sprite del personaje ${controllingCharacter} en bloque ${newBlockId} a posición: (${isoX}, ${isoY + 20})`);
+      this.tweens.add({
+        targets: sprite,
+        x: isoX,
+        y: isoY + 20,
+        duration: 500,
+        ease: 'Power1',
+        onComplete: () => {
+          console.log(`Sprite del personaje ${controllingCharacter} en bloque ${newBlockId} actualizado.`);
+        }
+      });
+    } else {
+      console.log(`No se encontró sprite para el personaje ${controllingCharacter} en bloque ${newBlockId}, se crea uno nuevo.`);
+      const sprite = this.add.sprite(isoX, isoY + 20, 'soldierIdle').setOrigin(0.5, 1);
+      sprite.play('idle');
+      sprite.setDepth(isoY + 20);
+      charSprites.set(newBlockId, sprite);
     }
   }
-
-  // Actualiza el tinte del bloque cuando se recibe un evento de actualización
+  
   handleBlockUpdated(newEvent: BlockState) {
     console.log("Evento blockUpdated recibido:", newEvent);
     const blockId = parseInt(newEvent.blockId);
     const blockSprite = this.getBlockSpriteById(blockId);
     if (blockSprite) {
-      this.applyStatusTint(blockSprite, newEvent.status);
+      // Guardamos el BlockState en el sprite para recalcular el tinte luego
+      blockSprite.setData('blockState', newEvent);
+      this.applyStatusTint(blockSprite, newEvent);
     } else {
       console.warn(`No se encontró sprite para el bloque ${blockId}`);
     }
   }
+  
   
   shutdown() {
     GameStateManager.off('blockConquestStarted', this.handleBlockConquestStarted, this);

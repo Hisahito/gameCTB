@@ -7,6 +7,7 @@ const BlockCounter: React.FC = () => {
 
   useEffect(() => {
     const handleBlockNumber = (newBlockNumber: string) => {
+   
       setBlockNumber(newBlockNumber);
     };
 

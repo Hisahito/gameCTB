@@ -21,7 +21,7 @@ export function CreateCharacter() {
     const affinity = formData.get('affinity') as string 
     const velocity = formData.get('velocity') as string 
     writeContract({
-      address: '0x322AE0BEE905572DE3d1F67E2A560c19fbc76994',
+      address: '0x6A04F6C5dbd2eb417aEF84982a76509BEB5ec85d',
       abi,
       functionName: 'createCharacter',
       args: [BigInt(affinity), BigInt(velocity)],

@@ -37,7 +37,7 @@ const TimeEvents = () => {
     async function fetchEvents() {
       try {
         const logs = await publicClient.getLogs({
-          address: '0x322AE0BEE905572DE3d1F67E2A560c19fbc76994',
+          address: '0x6A04F6C5dbd2eb417aEF84982a76509BEB5ec85d',
           events: eventAbis,
           fromBlock: 48628746n,
           toBlock: 'latest',
@@ -56,7 +56,7 @@ const TimeEvents = () => {
   // Suscripción a nuevos eventos (watchEvent)
   useEffect(() => {
     const unwatch = publicClient.watchEvent({
-      address: '0x322AE0BEE905572DE3d1F67E2A560c19fbc76994',
+      address: '0x6A04F6C5dbd2eb417aEF84982a76509BEB5ec85d',
       events: eventAbis,
       onLogs: (logs) => {
         console.log('New logs:', logs)

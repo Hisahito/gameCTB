@@ -72,7 +72,7 @@ const Positions = () => {
               <th style={{ border: '1px solid #ccc', padding: '0.5rem' }}>ID Bloque</th>
               <th style={{ border: '1px solid #ccc', padding: '0.5rem' }}>Conquest End Block</th>
               <th style={{ border: '1px solid #ccc', padding: '0.5rem' }}>Blocks Remaining</th>
-              <th style={{ border: '1px solid #ccc', padding: '0.5rem' }}>Transaction Hash</th>
+              <th style={{ border: '1px solid #ccc', padding: '0.5rem' }}>Defended</th>
             </tr>
           </thead>
           <tbody>
@@ -83,7 +83,7 @@ const Positions = () => {
                 <td style={{ border: '1px solid #ccc', padding: '0.5rem' }}>{event.args.blockId}</td>
                 <td style={{ border: '1px solid #ccc', padding: '0.5rem' }}>{event.args.conquestEndBlock}</td>
                 <td style={{ border: '1px solid #ccc', padding: '0.5rem' }}>{event.args.blocksRemaining}</td>
-                <td style={{ border: '1px solid #ccc', padding: '0.5rem' }}>{event.transactionHash}</td>
+                <td style={{ border: '1px solid #ccc', padding: '0.5rem' }}>{event.args.defended}</td>
               </tr>
             ))}
           </tbody>

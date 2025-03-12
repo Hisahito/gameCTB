@@ -10,6 +10,7 @@ export interface BlockConquestStartedEvent {
     characterId: string;     // id del personaje
     conquestEndBlock: string;
     blocksRemaining: string;
+    defended: string;
   };
 }
 
@@ -18,6 +19,7 @@ export interface BlockState {
     status: string;
     owner: string | null;
     conquestEnd: string | null;
+    defended: string | null;
     futureOwner?: string | null;
     lastOwner?: string | null;
     ally?: string | null;

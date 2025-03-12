@@ -24,7 +24,7 @@ const CharacterEventListener: React.FC = () => {
 
     // Inicia la suscripción al evento usando watchEvent.
     const unwatch = publicClient.watchEvent({
-      address: '0x6A8c8abA55783dB59815B0213C8392E870Fb816c', // Dirección de tu smart contract
+      address: '0x6A04F6C5dbd2eb417aEF84982a76509BEB5ec85d', // Dirección de tu smart contract
       event: characterEvent,
       poll: false, // Usamos WebSocket si está disponible
       onLogs(newLogs) {

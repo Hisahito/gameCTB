@@ -5,6 +5,7 @@ import io from 'socket.io-client';
 interface CharacterCreatedEvent {
   eventName: string;
   args: {
+    owner: string;
     characterId: string;
     affinity: string;
     velocity: string;
@@ -53,7 +54,7 @@ const Characters = () => {
 
   return (
     <div>
-      <h2>Histórico de CharacterCreated</h2>
+      <h2>Mis personajes</h2>
       <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto' }}>
         {characters.map((character, index) => (
           <div
@@ -66,6 +67,9 @@ const Characters = () => {
               flex: '0 0 auto'
             }}
           >
+            <p>
+              <strong>Owner:</strong> {character.args.owner}
+            </p>
             <p>
               <strong>ID del Personaje:</strong> {character.args.characterId}
             </p>
