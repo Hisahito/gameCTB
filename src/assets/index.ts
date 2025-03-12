@@ -17,6 +17,9 @@ import nightBlockImg from './NightBlock1.png';
 import grassChestImg from './GrassChest.png';
 import grass2Img from './Grass2.png';
 import grass3Img from './Grass3.png';
+import grass4Img from './Grass4.png';
+import grass5Img from './Grass5.png';
+import tower1Img from './Tower1.png';
 import woods1Img from './Woods1.png';
 import woods2Img from './Woods2.png';
 import woods3Img from './Woods3.png';
@@ -39,6 +42,9 @@ const images: Images = {
   grassChest: grassChestImg,
   grass2: grass2Img,
   grass3: grass3Img,
+  grass4: grass4Img,
+  grass5: grass5Img,
+  tower1: tower1Img,
   woods1: woods1Img,
   woods2: woods2Img,
   woods3: woods3Img,

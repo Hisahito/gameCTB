@@ -1,7 +1,7 @@
 // src/services/WebSocketService.ts
 import { io, Socket } from 'socket.io-client';
 import GameStateManager from '../managers/GameStateManager';
-import { BlockConquestStartedEvent } from '../managers/GameStateManager';
+import { BlockConquestStartedEvent ,BlockState} from '../managers/GameStateManager';
 
 class WebSocketService {
   private socket: Socket;
@@ -19,9 +19,22 @@ class WebSocketService {
       if (data.eventName === 'BlockConquestStarted') {
         GameStateManager.updateBlockConquestStarted(data as BlockConquestStartedEvent);
       }
-      // Si recibes otros tipos, aquí podrías agregar más casos.
     });
+
+    // Escucha el evento 'blockNumber' para actualizar el contador global
+    this.socket.on('blockNumber', (data: string) => {
+      GameStateManager.updateBlockNumber(data);
+    });
+
+    // Escucha el evento 'blockUpdated' emitido por el backend
+    this.socket.on('blockUpdated', (data: any) => {
+        // Suponemos que data contiene el estado actualizado del bloque
+        GameStateManager.updateBlockState(data as BlockState);
+      });
+
   }
+
+  
 
   // Método opcional para enviar mensajes al backend si es necesario
   public sendMessage(event: string, payload: any): void {
@@ -30,5 +43,6 @@ class WebSocketService {
 }
 
 export default WebSocketService;
+
 
 

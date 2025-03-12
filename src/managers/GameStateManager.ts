@@ -13,13 +13,34 @@ export interface BlockConquestStartedEvent {
   };
 }
 
+export interface BlockState {
+    blockId: string;
+    status: string;
+    owner: string | null;
+    conquestEnd: string | null;
+    futureOwner?: string | null;
+    lastOwner?: string | null;
+    ally?: string | null;
+    originalOwner?: string | null;
+  }
+
 class GameStateManager extends EventEmitter {
   updateBlockConquestStarted(event: BlockConquestStartedEvent) {
-    // Emite el evento 'blockConquestStarted' para que los listeners (p.ej., Positions.tsx) puedan actualizar el estado
+    // Emite el evento 'blockConquestStarted' para que los listeners puedan actualizar el estado
     this.emit('blockConquestStarted', event);
+  }
+
+  updateBlockNumber(newBlockNumber: string) {
+    // Emite el evento 'blockNumber' para actualizar el contador
+    this.emit('blockNumber', newBlockNumber);
+  }
+
+  updateBlockState(blockState: BlockState) {
+    this.emit('blockUpdated', blockState);
   }
 }
 
 export default new GameStateManager();
+
 
 

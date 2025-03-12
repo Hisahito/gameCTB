@@ -10,6 +10,8 @@ import TransferEventsListener from './components/AlchemySocket';
 import MapCanvas2 from './components/World2';
 import TimeEvents from './components/TimeEvents';
 import Positions from './components/positions';
+import BlocksList from './components/BlockList';
+import BlockCounter from './components/BlockCounter';
 
 const App: React.FC = () => {
   return (
@@ -38,14 +40,21 @@ const App: React.FC = () => {
           maxWidth: '50%' 
         }}>
           <HistoricalCharacterEvents />
-          <Positions/>
+          
         </div>
       </header>
       <CreateCharacter/>
-      <TimeEvents/>
+      <Positions/>
+      <BlocksList/>
+      <BlockCounter/>
+     
 
       {/* Resto de componentes debajo del header */}
+
+      <div>
       <MapCanvas2 />
+      </div>
+      
     </div>
   );
 };
