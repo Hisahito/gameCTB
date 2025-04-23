@@ -23,6 +23,13 @@ import tower1Img from './Tower1.png';
 import woods1Img from './Woods1.png';
 import woods2Img from './Woods2.png';
 import woods3Img from './Woods3.png';
+import bunny from './Coneja.png';
+import grasshd from './grasshd.png';
+import pine from './pine.png';
+import mage from './mage2.png'
+import mage2 from './mage3.png'
+import mage4 from './mage4.png'
+import elf from './blueelf.png'
 
 interface Images {
   [key: string]: string;
@@ -48,6 +55,13 @@ const images: Images = {
   woods1: woods1Img,
   woods2: woods2Img,
   woods3: woods3Img,
+  bunny: bunny,
+  grasshd: grasshd,
+  pine: pine,
+  mage: mage,
+  mage2: mage2,
+  mage4: mage4,
+  elf: elf,
 };
 
 export default images;

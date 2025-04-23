@@ -1,0 +1,73 @@
+.side-menu {
+    position: absolute;
+    top: 30%;
+    left: 95%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px;
+    z-index: 10;
+  }
+
+  .son{
+    position: absolute;
+    top: 10%;
+    left: 90%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px;
+    z-index: 10;
+  }
+  
+  .menu-icon {
+    width: 60px;
+    height: auto;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .menu-icon:hover {
+    transform: scale(1.1);
+  }
+  
+  .popup-panel {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: black;
+    padding: 30px;
+    border-radius: 8px;
+    color: white;
+    z-index: 20;
+    max-width: 800px; /* ← Ajustable */
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    text-align: center;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 250px;
+  }
+  
+  
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: crimson;
+    border: none;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+  }
+  

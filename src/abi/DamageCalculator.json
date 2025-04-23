@@ -1,0 +1,81 @@
+[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_ability",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_character",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "abilityContract",
+		"outputs": [
+			{
+				"internalType": "contract IAbilityNFT",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "characterContract",
+		"outputs": [
+			{
+				"internalType": "contract ICharacterNFT",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "abilityTokenId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "characterTokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "computeDamage",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "damage",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "NUM_FEATURES",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]

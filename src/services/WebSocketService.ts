@@ -4,7 +4,7 @@ import GameStateManager from '../managers/GameStateManager';
 import { BlockConquestStartedEvent, BlockState } from '../managers/GameStateManager';
 
 class WebSocketService {
-  private socket: Socket;
+  public socket: Socket;
 
   constructor(url: string) {
     // Conexión usando socket.io-client

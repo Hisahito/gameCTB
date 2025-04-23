@@ -1,0 +1,23 @@
+/* src/components/PJSelector.css */
+.pj-selector {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 50px;
+    z-index: 10;
+  }
+  
+  .pj-icon {
+    
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .pj-icon:hover {
+    transform: scale(1.1);
+  }
+  

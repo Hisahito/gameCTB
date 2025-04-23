@@ -48,8 +48,8 @@ const MapCanvas2: React.FC = () => {
 
     const phaserGame = new Phaser.Game({
       type: Phaser.AUTO,
-      width: 1200,
-      height: 800,
+      width: window.innerWidth,
+      height: window.innerHeight,
       backgroundColor: '#87CEEB',
       parent: gameContainerRef.current!,
       scene: IsoScene,
