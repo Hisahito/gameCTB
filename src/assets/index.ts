@@ -30,6 +30,7 @@ import mage from './mage2.png'
 import mage2 from './mage3.png'
 import mage4 from './mage4.png'
 import elf from './blueelf.png'
+import grassia from './grassia.png'
 
 interface Images {
   [key: string]: string;
@@ -62,6 +63,7 @@ const images: Images = {
   mage2: mage2,
   mage4: mage4,
   elf: elf,
+  grassia: grassia,
 };
 
 export default images;

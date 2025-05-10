@@ -33,7 +33,7 @@ export default class IsoScene extends Phaser.Scene {
 
   preload() {
     Object.entries(images).forEach(([key, value]) => this.load.image(key, value));
-    this.load.json('world', 'Canonical.json');
+    this.load.json('world', '/Canonical.json');
   }
 
   create() {
@@ -139,13 +139,13 @@ export default class IsoScene extends Phaser.Scene {
       if (category === 'Special Cluster 1') texture = 'agua';
       else if (category === 'Special Cluster 2') texture = 'tower1';
       else if (category === 'Special Cluster 3') texture = 'cofre';
-      else if (category === 'Special Cluster 4') texture = 'grasshd';
+      else if (category === 'Special Cluster 4') texture = 'grassia';
       else if (category === 'Special Cluster 5') texture = 'castillo';
       else if (only === 3) texture = 'bunny';
       else if (only === 1) texture = 'blockWoods';
       else if (only === 6) texture = 'agua';
       else if (only === 8) texture = 'castillo';
-      if (!texture) texture = getDeterministicTexture([{ key: 'grasshd', probability: 1 }], block.blockId);
+      if (!texture) texture = getDeterministicTexture([{ key: 'grassia', probability: 1 }], block.blockId);
 
       const sprite = this.add.sprite(isoX, isoY, texture).setOrigin(0.5, 1);
       sprite.setData('blockId', block.blockId);

@@ -179,27 +179,22 @@
 		"inputs": [
 			{
 				"indexed": true,
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
+				"internalType": "uint256",
+				"name": "typeId",
+				"type": "uint256"
+			}
+		],
+		"name": "BaseUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
 			{
 				"indexed": true,
 				"internalType": "uint256",
 				"name": "tokenId",
 				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "characterType",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "enum CharacterNFT.Rank",
-				"name": "rank",
-				"type": "uint8"
 			}
 		],
 		"name": "CharacterAdded",
@@ -211,75 +206,7 @@
 			{
 				"indexed": true,
 				"internalType": "uint256",
-				"name": "characterType",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "imageUrl",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "element",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "weapon",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint8[9]",
-				"name": "talents",
-				"type": "uint8[9]"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256[9]",
-				"name": "birthStats",
-				"type": "uint256[9]"
-			}
-		],
-		"name": "CharacterBaseUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "enum CharacterNFT.Rank",
-				"name": "rank",
-				"type": "uint8"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "copies",
-				"type": "uint256"
-			}
-		],
-		"name": "EvolveRequirementUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "targetId",
+				"name": "tokenId",
 				"type": "uint256"
 			},
 			{
@@ -375,7 +302,7 @@
 			},
 			{
 				"internalType": "enum CharacterNFT.Rank",
-				"name": "rank",
+				"name": "rank_",
 				"type": "uint8"
 			}
 		],
@@ -406,7 +333,7 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "targetId",
+				"name": "tokenId",
 				"type": "uint256"
 			},
 			{
@@ -513,7 +440,7 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "characterType",
+				"name": "typeId",
 				"type": "uint256"
 			},
 			{
@@ -537,14 +464,9 @@
 				"type": "uint256"
 			},
 			{
-				"internalType": "uint8[9]",
+				"internalType": "uint8[6]",
 				"name": "talents",
-				"type": "uint8[9]"
-			},
-			{
-				"internalType": "uint256[9]",
-				"name": "birthStats",
-				"type": "uint256[9]"
+				"type": "uint8[6]"
 			}
 		],
 		"name": "setCharacterBase",
@@ -555,8 +477,49 @@
 	{
 		"inputs": [
 			{
+				"internalType": "uint256",
+				"name": "characterType",
+				"type": "uint256"
+			},
+			{
 				"internalType": "enum CharacterNFT.Rank",
-				"name": "rank",
+				"name": "rank_",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint256[3][6]",
+				"name": "capsMatrix",
+				"type": "uint256[3][6]"
+			}
+		],
+		"name": "setCustomCapsBatch",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "enum CharacterNFT.Rank",
+				"name": "rank_",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint256[3][6]",
+				"name": "capsMatrix",
+				"type": "uint256[3][6]"
+			}
+		],
+		"name": "setDefaultCapsBatch",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "enum CharacterNFT.Rank",
+				"name": "rank_",
 				"type": "uint8"
 			},
 			{
@@ -566,6 +529,60 @@
 			}
 		],
 		"name": "setEvolveRequirement",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint16[6]",
+				"name": "newFactors",
+				"type": "uint16[6]"
+			}
+		],
+		"name": "setFactorsForTest",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "newLevel",
+				"type": "uint256"
+			}
+		],
+		"name": "setLevelForTest",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "enum CharacterNFT.Rank",
+				"name": "rank_",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint8",
+				"name": "percent",
+				"type": "uint8"
+			}
+		],
+		"name": "setReductionPercent",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -675,16 +692,6 @@
 		"name": "characters",
 		"outputs": [
 			{
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "imageUrl",
-				"type": "string"
-			},
-			{
 				"internalType": "uint256",
 				"name": "characterType",
 				"type": "uint256"
@@ -696,42 +703,49 @@
 			},
 			{
 				"internalType": "uint256",
-				"name": "element",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "weapon",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
 				"name": "level",
 				"type": "uint256"
 			},
 			{
 				"components": [
 					{
-						"internalType": "uint256[9]",
-						"name": "values",
-						"type": "uint256[9]"
+						"internalType": "uint16[6]",
+						"name": "v",
+						"type": "uint16[6]"
 					}
 				],
-				"internalType": "struct CharacterNFT.Stats",
-				"name": "stats",
-				"type": "tuple"
-			},
-			{
-				"components": [
-					{
-						"internalType": "uint16[9]",
-						"name": "values",
-						"type": "uint16[9]"
-					}
-				],
-				"internalType": "struct CharacterNFT.PersonalFactors",
+				"internalType": "struct CharacterNFT.Factors",
 				"name": "factors",
 				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "enum CharacterNFT.Rank",
+				"name": "",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"name": "defaultCaps",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -783,79 +797,61 @@
 				"type": "uint256"
 			}
 		],
-		"name": "getCharacterInfo",
+		"name": "getFactors",
+		"outputs": [
+			{
+				"internalType": "uint16[6]",
+				"name": "",
+				"type": "uint16[6]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "getInfo",
 		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "characterType",
+				"name": "typeId",
 				"type": "uint256"
 			},
-			{
-				"internalType": "uint256",
-				"name": "element",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "weapon",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "getCharacterType",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "getLevel",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "getRank",
-		"outputs": [
 			{
 				"internalType": "enum CharacterNFT.Rank",
-				"name": "",
+				"name": "rank_",
 				"type": "uint8"
+			},
+			{
+				"internalType": "uint256",
+				"name": "level_",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256[6]",
+				"name": "stats_",
+				"type": "uint256[6]"
+			},
+			{
+				"internalType": "uint256",
+				"name": "element_",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "weapon_",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint8[6]",
+				"name": "talents_",
+				"type": "uint8[6]"
 			}
 		],
 		"stateMutability": "view",
@@ -872,9 +868,9 @@
 		"name": "getStats",
 		"outputs": [
 			{
-				"internalType": "uint256[9]",
+				"internalType": "uint256[6]",
 				"name": "",
-				"type": "uint256[9]"
+				"type": "uint256[6]"
 			}
 		],
 		"stateMutability": "view",
@@ -957,6 +953,25 @@
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "enum CharacterNFT.Rank",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"name": "reductionPercent",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
 			}
 		],
 		"stateMutability": "view",

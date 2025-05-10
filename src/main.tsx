@@ -16,6 +16,10 @@ import CharacterAbilityCalculator from './test/CalculatorUI';
 import GridMapBase from './test/GridMapUI';
 import WorldBattle from './components/WorldBattle';
 import Battle from './Battle';
+import { AutoBattle } from './AutoBattle';
+import StatsPanel from './components/CharacterInfo/StatsPanel';
+import MainPanel from './components/CharacterInfo/MainPanel';
+import Main from './components/CharacterInfo/Main';
 
 
 // import './styles/index.css'; // Importa los estilos globales
@@ -59,6 +63,8 @@ if (rootElement) {
       <Route path="/map" element={<GridMapBase />} />
       <Route path="game" element={<CharacterAbilityCalculator/>} />
       <Route path="/battle" element={<Battle/>} />
+      <Route path="/auto" element={<AutoBattle/>} />
+      <Route path="/test" element={<Main contract='0x4fE8dd2166701D7fcD23fb277696EdC58250aB4b' tokenId='0'/>} />
       </Routes>
     </React.StrictMode>
     </NftProvider>
